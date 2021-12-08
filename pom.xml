@@ -117,7 +117,7 @@
 		<dependency>
 			<groupId>5d771997-4797-4fdf-b353-d5d16b903e66</groupId>
 			<artifactId>mule-plugin-sys-oim-api</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
