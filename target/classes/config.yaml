@@ -1,0 +1,10 @@
+http:
+  port: "8081"
+    
+req:
+  host: "sys-oim-api.us-e2.cloudhub.io"
+  port: "80"
+  path: "/api/employees"
+  sfdcpath: "/api/account"
+  sfdchost: "sys-sfdc-api.us-e2.cloudhub.io"
+  

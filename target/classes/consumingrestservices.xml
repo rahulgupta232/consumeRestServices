@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sys-oim-api="http://www.mulesoft.org/schema/mule/sys-oim-api" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/sys-oim-api http://www.mulesoft.org/schema/mule/sys-oim-api/current/mule-sys-oim-api.xsd">
+	<sys-oim-api:config name="Sys_OIM_api_Config" doc:name="Sys-OIM-api Config" doc:id="0c5621d4-176e-41af-a1a3-f17514828521" property_host="sys-oim-api.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP" property_basePath="/api" />
+	<flow name="consumingrestservicesFlow" doc:id="6aeaea3a-1c7a-4cce-86f5-67f859c3f989" >
+		<scheduler doc:name="Scheduler" doc:id="f1088448-20ed-4f54-8786-b8a3ce640214" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="24" timeUnit="HOURS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<os:retrieve doc:name="lastDateTime" doc:id="8716336c-be5f-4061-bb59-0bc19cd88cf0" key="lastDateTime" target="lastDateTime">
+			<os:default-value><![CDATA[1609462800]]></os:default-value>
+		</os:retrieve>
+		<http:request method="GET" doc:name="GET_employees" doc:id="276a73f8-7a9f-4820-9e4b-3af0365477d8" config-ref="HTTP_Request_configuration" path="${req.path}">
+			<reconnect frequency="3000" />
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"lastDateTime" : vars.lastDateTime
+}]]]></http:query-params>
+		</http:request>
+		<choice doc:name="Choice" doc:id="c1ed508e-6aaa-4f4e-8fea-0ea9b598bdfc" >
+			<when expression="#[not isEmpty(payload)]">
+				<os:store doc:name="lastDateTime" doc:id="60cf4d38-d3e6-47be-a3b3-cbb992ebd68a" key="lastDateTime">
+					<os:value ><![CDATA[#[now() as Number]]]></os:value>
+				</os:store>
+				<http:request method="POST" doc:name="create Account" doc:id="ee304b8f-d42b-4fac-9561-ed91e6d12969" config-ref="HTTP_Request_sfdc" path="${req.sfdcpath}" responseTimeout="90000">
+					<reconnect frequency="3000" />
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : "5a71cc23fdf74f0295c4c058edc6ce1a",
+	"Content-Type" : "application/json",
+	"client_id" : "3960Fb12D6F04aA292F3E40abC77D6BE"
+}]]]></http:headers>
+				</http:request>
+				<set-payload value="Salesforce accounts created successfully !!" doc:name="Success Message" doc:id="3dc08a9b-b72c-4020-b8af-523b20e403f2" />
+			</when>
+			<otherwise >
+				<set-payload value="No new employee record found" doc:name="Message" doc:id="b32d17a6-0500-4bf0-8bc8-ea4cfc5d892f" />
+				<logger level="INFO" doc:name="Logger" doc:id="d56b1fd7-6866-41fe-b691-f5fb4ccde180" message="#[payload]" />
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="304c9d3a-080b-4890-ae58-e414085abc44" type="ANY">
+				<ee:transform doc:name="error desc" doc:id="2e8501b4-ca80-40b8-a548-8f200c3d63de" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="500" doc:name="httpStatus" doc:id="80418c03-5c3c-47ec-9698-d68d9beade1a" variableName="httpStatus"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>
