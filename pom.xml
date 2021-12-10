@@ -33,19 +33,19 @@
 				<configuration>
 				<cloudHubDeployment>
 						<uri>https://anypoint.mulesoft.com</uri>
-						<muleVersion>${mule.version}</muleVersion>
-						<username>${anypoint.username}</username>
-						<password>${anypoint.password}</password>
-						<applicationName>${cloudhub.app}</applicationName>
-						<environment>${cloudhub.environment}</environment>
-						<businessGroup>${cloudhub.bg}</businessGroup>
+						<muleVersion>4.4.0</muleVersion>
+						<username>rahulgupta2321</username>
+						<password>DJcracker@232</password>
+						<applicationName>consumingrestservices</applicationName>
+						<environment>Sandbox</environment>
+						<businessGroup>Apisero</businessGroup>
 						<workers>1</workers>
-						<workerType>${cloudhub.worker}</workerType>
+						<workerType>Micro</workerType>
 						<objectStoreV2>true</objectStoreV2>
 						<!-- <server>AnypointSandbox</server> -->
 						<properties>
-							<anypoint.platform.client_id>${anypoint.platform.client_id}</anypoint.platform.client_id>
-							<anypoint.platform.client_secret>${anypoint.platform.client_secret}</anypoint.platform.client_secret>
+							<anypoint.platform.client_id>acdff81be0db45e9a86c95f1c2c3866f</anypoint.platform.client_id>
+							<anypoint.platform.client_secret>10c134192286482e93D3A3E25b7Ea570</anypoint.platform.client_secret>
 						</properties>
 					</cloudHubDeployment>
 					<classifier>mule-application</classifier>
